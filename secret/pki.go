@@ -221,3 +221,47 @@ func SetURLs(vaultAddress string, vaultPort string, vaultToken *string, CrlDistr
 	log.Println(string(bodyBytes))
 
 }
+
+
+type CreateRolePayload struct {
+	AllowedDomains   []string `json:"allowed_domains"`
+	AllowSubdomains bool `json:"allow_subdomains"`
+}
+
+
+func CreateRole(vaultAddress string, vaultPort string, vaultToken *string, vaultPath, roleName string,  AllowSubdomains bool, AllowedDomains []string) {
+
+	var roleData CreateRolePayload
+
+	roleData.AllowedDomains = AllowedDomains
+	roleData.AllowSubdomains = AllowSubdomains
+
+	dataJSON, err := json.Marshal(roleData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/v1/%s/roles/%s", vaultAddress, vaultPort, vaultPath, roleName), bytes.NewBuffer(dataJSON))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Set("X-Vault-Token", *vaultToken)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(string(bodyBytes))
+
+}

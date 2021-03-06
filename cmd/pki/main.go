@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"strconv"
 
 	secret "github.com/blinchik/vault/secret"
 	sys "github.com/blinchik/vault/sys"
@@ -29,6 +30,7 @@ func main() {
 	enable := flag.Bool("enable", false, "enable secret engine")
 	gr := flag.Bool("gr", false, "generate root CA")
 	gi := flag.Bool("gi", false, "generate intermidate CA")
+	cr := flag.Bool("cr", false, "create pki role")
 
 	setURL := flag.Bool("setURL", false, "setURL")
 
@@ -58,12 +60,12 @@ func main() {
 
 		cert := secret.GenerateIntermediate(vaultAddress, vaultPort, &vaultToken, commonName, path)
 
-		signedCert := secret.SignIntermediate(vaultAddress, vaultPort, &vaultToken, commonName, cert, "pki_root1")
+		signedCert := secret.SignIntermediate(vaultAddress, vaultPort, &vaultToken, commonName, cert, "pki")
 
 		q := strings.Split(signedCert, "\n")
 
 		input := strings.Join(q, "\\n")
-		// fmt.Println(input)
+
 
 		secret.SetSignedIntermediate(vaultAddress, vaultPort, &vaultToken, input, path)
 
@@ -75,6 +77,27 @@ func main() {
 		IssuingCertificates := strings.Split(os.Args[6], ",")
 
 		secret.SetURLs(vaultAddress, vaultPort, &vaultToken, crlDistributionPoints, IssuingCertificates)
+
+	}
+
+
+	
+	if *cr {
+
+		path := os.Args[5]
+		roleName := os.Args[6]
+
+
+
+		allow_subdomains, err := strconv.ParseBool(os.Args[7])
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		allowed_domains := strings.Split(os.Args[8], ",")
+
+		secret.CreateRole(vaultAddress, vaultPort, &vaultToken, path, roleName, allow_subdomains, allowed_domains)
 
 	}
 
