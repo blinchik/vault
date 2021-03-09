@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-func GenerateRoot(vaultAddress string, vaultPort string, vaultToken *string, commonName string) {
+func GenerateRoot(vaultAddress string, vaultPort string, vaultToken *string, commonName, ttl string) {
 
-	payload := fmt.Sprintf(` {"common_name": "%s" }`, commonName)
+	payload := fmt.Sprintf(` {"common_name": "%s", "ttl": "%s" }`, commonName, ttl)
 
 	body := strings.NewReader(payload)
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/v1/pki/root/generate/internal", vaultAddress, vaultPort), body)
@@ -30,12 +30,7 @@ func GenerateRoot(vaultAddress string, vaultPort string, vaultToken *string, com
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	log.Println(string(bodyBytes))
 
 }
 
@@ -92,6 +87,7 @@ type PayloadSignIntermediate struct {
 	Csr        string `json:"csr"`
 	CommonName string `json:"common_name"`
 	Format     string `json:"format"`
+	Ttl 	   string `json:"ttl"`
 }
 
 type outputSignIntermediate struct {
@@ -107,7 +103,7 @@ type outputSignIntermediate struct {
 	Auth interface{} `json:"auth"`
 }
 
-func SignIntermediate(vaultAddress string, vaultPort string, vaultToken *string, commonName, csr, path string) string {
+func SignIntermediate(vaultAddress string, vaultPort string, vaultToken *string, commonName, csr, path, ttl string) string {
 
 	var SIdata PayloadSignIntermediate
 	var output outputSignIntermediate
@@ -115,6 +111,9 @@ func SignIntermediate(vaultAddress string, vaultPort string, vaultToken *string,
 	SIdata.Csr = csr
 	SIdata.CommonName = commonName
 	SIdata.Format = "pem"
+	SIdata.Ttl = ttl
+
+
 
 	dataJSON, err := json.Marshal(SIdata)
 
@@ -226,15 +225,21 @@ func SetURLs(vaultAddress string, vaultPort string, vaultToken *string, CrlDistr
 type CreateRolePayload struct {
 	AllowedDomains   []string `json:"allowed_domains"`
 	AllowSubdomains bool `json:"allow_subdomains"`
+	MaxTtl   string `json:"max_ttl"`
+	Ttl   string `json:"ttl"`
+
 }
 
 
-func CreateRole(vaultAddress string, vaultPort string, vaultToken *string, vaultPath, roleName string,  AllowSubdomains bool, AllowedDomains []string) {
+func CreateRole(vaultAddress string, vaultPort string, vaultToken *string, vaultPath, roleName string,  AllowSubdomains bool, AllowedDomains []string, max_ttl, ttl string) {
 
 	var roleData CreateRolePayload
 
 	roleData.AllowedDomains = AllowedDomains
 	roleData.AllowSubdomains = AllowSubdomains
+	roleData.MaxTtl = max_ttl
+	roleData.Ttl = ttl
+
 
 	dataJSON, err := json.Marshal(roleData)
 

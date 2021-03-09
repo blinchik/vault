@@ -40,16 +40,20 @@ func main() {
 
 		secretEngine := os.Args[5]
 		path := os.Args[6]
+		defaultLeaseTtl := os.Args[7]
+		maxLeaseTtl := os.Args[8]
 
-		sys.EnableSecretEngine(vaultAddress, vaultPort, &vaultToken, secretEngine, path)
+
+		sys.EnableSecretEngine(vaultAddress, vaultPort, &vaultToken, secretEngine, path, defaultLeaseTtl, maxLeaseTtl)
 
 	}
 
 	if *gr {
 
 		commonName := os.Args[5]
+		ttl := os.Args[6]
 
-		secret.GenerateRoot(vaultAddress, vaultPort, &vaultToken, commonName)
+		secret.GenerateRoot(vaultAddress, vaultPort, &vaultToken, commonName, ttl)
 
 	}
 
@@ -57,10 +61,12 @@ func main() {
 
 		commonName := os.Args[5]
 		path := os.Args[6]
+		ttl := os.Args[7]
+
 
 		cert := secret.GenerateIntermediate(vaultAddress, vaultPort, &vaultToken, commonName, path)
 
-		signedCert := secret.SignIntermediate(vaultAddress, vaultPort, &vaultToken, commonName, cert, "pki")
+		signedCert := secret.SignIntermediate(vaultAddress, vaultPort, &vaultToken, commonName, cert, "pki", ttl)
 
 		q := strings.Split(signedCert, "\n")
 
@@ -88,7 +94,6 @@ func main() {
 		roleName := os.Args[6]
 
 
-
 		allow_subdomains, err := strconv.ParseBool(os.Args[7])
 
 		if err != nil {
@@ -97,7 +102,11 @@ func main() {
 
 		allowed_domains := strings.Split(os.Args[8], ",")
 
-		secret.CreateRole(vaultAddress, vaultPort, &vaultToken, path, roleName, allow_subdomains, allowed_domains)
+		maxTtl := os.Args[9]
+		ttl := os.Args[10]
+
+
+		secret.CreateRole(vaultAddress, vaultPort, &vaultToken, path, roleName, allow_subdomains, allowed_domains, maxTtl, ttl)
 
 	}
 

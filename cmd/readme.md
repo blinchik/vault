@@ -1,8 +1,8 @@
 
 
 ```bash
-go run main.go -enable <vault address> 8200 <vault token> pki pki
-go run main.go -enable <vault address> 8200 <vault token> pki pki_int
+go run main.go -enable <vault address> 8200 <vault token> pki pki 72h 72h
+go run main.go -enable <vault address> 8200 <vault token> pki pki_int 72h 72h
 
 go run main.go -gr <vault address> 8200 <vault token> blinchik.consul
 
