@@ -72,8 +72,6 @@ func VaultInit(vaultAddress, vaultPort string, shares, threshold int) vaultInitR
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(bodyBytes))
-
 	if strings.Contains(string(bodyBytes), "Vault is already initialized") {
 
 		os.Exit(1)
