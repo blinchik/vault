@@ -19,9 +19,11 @@ type vaultInitPayload struct {
 }
 
 type vaultInitResp struct {
-	Keys       []string `json:"keys"`
-	KeysBase64 []string `json:"keys_base64"`
-	RootToken  string   `json:"root_token"`
+		Keys               []string `json:"keys"`
+		KeysBase64         []string `json:"keys_base64"`
+		RecoveryKeys       []string      `json:"recovery_keys"`
+		RecoveryKeysBase64 []string      `json:"recovery_keys_base64"`
+		RootToken          string        `json:"root_token"`
 }
 
 // VaultInit This endpoint initializes a new Vault. The Vault must not have been previously initialized.
@@ -66,11 +68,9 @@ func VaultInit(vaultAddress, vaultPort string, shares, threshold int) vaultInitR
 		log.Fatal(err)
 	}
 
-	err = json.Unmarshal(bodyBytes, &output)
+	fmt.Println(string(bodyBytes))
+	fmt.Println(output)
 
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	if strings.Contains(string(bodyBytes), "Vault is already initialized") {
 
