@@ -10,17 +10,15 @@ import (
 )
 
 type EnablePayload struct {
-	Type string `json:"type"`
-	Path string `json:"path"`
+	Type   string `json:"type"`
+	Path   string `json:"path"`
 	Config struct {
 		DefaultLeaseTtl string `json:"default_lease_ttl"`
-		MaxLeaseTtl string `json:"max_lease_ttl"`
+		MaxLeaseTtl     string `json:"max_lease_ttl"`
 	} `json:"config"`
 }
 
-
-
-func EnableSecretEngine(vaultAddress string, vaultPort string, vaultToken *string, secretEngine, path, defaultLeaseTtl, maxLeaseTtl  string) {
+func EnableSecretEngine(vaultAddress string, vaultPort string, vaultToken *string, secretEngine, path, defaultLeaseTtl, maxLeaseTtl string) {
 
 	var enableData EnablePayload
 

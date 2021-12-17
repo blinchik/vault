@@ -2,11 +2,14 @@ package sys
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 type vaultUnsealPayload struct {
@@ -24,7 +27,31 @@ type vaultUnsealResp struct {
 }
 
 //VaultUnseal
-func VaultUnseal(vaultAddress, vaultPort, MasterKey string) vaultUnsealResp {
+func VaultUnseal(vaultAddress, vaultPort, MasterKey, caChainFile, clientCertFile, clientKeyFile string) vaultUnsealResp {
+
+	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	caCert, err := ioutil.ReadFile(caChainFile)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	t := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		},
+	}
+
+	client := http.Client{Transport: t, Timeout: 15 * time.Second}
 
 	var data vaultUnsealPayload
 	var output vaultUnsealResp
@@ -37,18 +64,20 @@ func VaultUnseal(vaultAddress, vaultPort, MasterKey string) vaultUnsealResp {
 		log.Fatal(err)
 	}
 
-	req, err := http.NewRequest("PUT", fmt.Sprintf("http://%s:%s/v1/sys/unseal", vaultAddress, vaultPort), bytes.NewBuffer(dataJSON))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("https://%s:%s/v1/sys/unseal", vaultAddress, vaultPort), bytes.NewBuffer(dataJSON))
 	if err != nil {
 		log.Fatal(err)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = json.Unmarshal(bodyBytes, &output)
 	if err != nil {
 		log.Fatal(err)
